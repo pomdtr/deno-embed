@@ -1,0 +1,21 @@
+{
+    "name": "@smallweb/embed",
+    "version": "0.0.6",
+    "exports": {
+        ".": "./src/mod.ts"
+    },
+    "publish": {
+        "include": [
+            "README.md",
+            "src/**/*.ts"
+        ]
+    },
+    "test": {
+        "exclude": [
+            // Has example code that references theoretical modules:
+            "README.md",
+            // Pseudocode doc block example:
+            "src/helpers/hono.ts"
+        ]
+    }
+}
