@@ -1,6 +1,6 @@
 {
     "name": "@smallweb/embed",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "exports": {
         ".": "./mod.ts",
         "./embeds": "./embeds.ts"
@@ -12,6 +12,7 @@
         "include": [
             "mod.ts",
             "embeds.ts",
+            "file_server.ts",
             "README.md"
         ]
     }

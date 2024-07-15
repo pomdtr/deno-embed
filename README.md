@@ -13,11 +13,11 @@ deno run -A jsr:@smallweb/embed frontend/dist dist
 Then, from your app, you can import the assets from the generated module:
 
 ```ts
-import { serveDir } from "./dist/mod.ts";
+import embeds from "./dist/mod.ts";
 
 // serve the static assets from the frontend/dist directory
 function handler(req: Request) {
-    return serveDir(req);
+    return embeds.serve(req);
 }
 
 export default {

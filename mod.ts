@@ -2,6 +2,7 @@ import * as path from "jsr:@std/path@1.0.0";
 import { exists } from "jsr:@std/fs@1.0.0-rc.5";
 import { encodeBase64 } from "jsr:@std/encoding@1.0.1/base64";
 import { Command } from "jsr:@cliffy/command@1.0.0-rc.5";
+import { eTag } from "jsr:@std/http@1.0.0-rc.4/etag";
 import manifest from "./deno.json" with { type: "json" };
 
 /** Read all files from a directory tree, recursively.  */
@@ -83,8 +84,10 @@ class StaticConverter implements Converter {
 
     async #convertFile(relPath: string) {
         const fullPath = path.join(this.#sourceDir, relPath);
+        const fileInfo = await Deno.stat(fullPath);
         await this.#embedWriter.writeFile({
             filePath: relPath,
+            fileInfo,
             data: await Deno.readFile(fullPath),
         });
     }
@@ -111,7 +114,11 @@ class EmbedWriter {
     }
 
     async writeFile(
-        { filePath, data }: { filePath: string; data: Uint8Array },
+        { filePath, fileInfo, data }: {
+            filePath: string;
+            fileInfo: Deno.FileInfo;
+            data: Uint8Array;
+        },
     ): Promise<void> {
         const compression = "gzip";
         const compressed = await compress(data, compression);
@@ -133,7 +140,14 @@ class EmbedWriter {
         if (shouldCompress) {
             outLines.push(` compression: "${compression}",`);
         }
-        outLines.push(` encoded: \`\n${encoded}\`,`);
+        outLines.push(` encoded: \`${encoded}\`,`);
+        outLines.push(` eTag: \`${await eTag(data)}\`,`);
+        if (fileInfo.atime) {
+            outLines.push(` atime: new Date(${fileInfo.atime.getTime()}),`);
+        }
+        if (fileInfo.mtime) {
+            outLines.push(` mtime: new Date(${fileInfo.mtime.getTime()}),`);
+        }
         outLines.push(`}`);
         const outData = outLines.join("\n");
 

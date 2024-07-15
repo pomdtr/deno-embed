@@ -1,13 +1,12 @@
 import { decodeBase64 } from "jsr:@std/encoding@1.0.1/base64";
-import { extname } from "jsr:@std/path@1.0.0";
-import { contentType } from "jsr:@std/media-types@1.0.0";
+import { serveDir, type ServeDirOptions } from "./file_server.ts";
 
 const decoder = new TextDecoder();
 
 /**
  * Represents the contents of a file that's been embedded into TypeScript.
  */
-class File {
+export class File {
     /** Size of the embedded file in bytes (uncomrpessed/unencoded) */
     readonly size: number;
 
@@ -57,7 +56,7 @@ class File {
 /**
  * The data we expect to find generated embedded files.
  */
-interface FileMeta {
+export interface FileMeta {
     /** Size of the embedded file (uncomrpessed/unencoded) */
     size: number;
 
@@ -72,6 +71,9 @@ interface FileMeta {
 
     /** If specified, how the bytes of this file are compressed. */
     compression?: CompressionFormat;
+    eTag: string;
+    atime?: Date;
+    mtime?: Date;
 
     // TODO: sha256, modified time, etc.
 }
@@ -146,6 +148,13 @@ export class Embeds<K extends string = string> {
         return new File(mod.default);
     }
 
+    async stat(filePath: K): Promise<FileMeta | null> {
+        const importer = this.#embeds[filePath];
+        if (!importer) return null;
+        const mod = await importer();
+        return mod.default;
+    }
+
     /**
      * Method to do runtime loading of a file.
      *
@@ -160,24 +169,7 @@ export class Embeds<K extends string = string> {
         return new File(mod.default);
     }
 
-    async serve(req: Request) {
-        let { pathname } = new URL(req.url);
-        if (pathname.endsWith("/")) {
-            pathname += "index.html";
-        }
-
-        const file = await this.get(pathname.slice(1));
-        if (!file) {
-            return new Response("Not found", { status: 404 });
-        }
-
-        const type = contentType(extname(pathname)) ||
-            "application/octet-stream";
-
-        return new Response(await file.bytes(), {
-            headers: {
-                "Content-Type": type,
-            },
-        });
+    serve(req: Request, options?: ServeDirOptions): Promise<Response> {
+        return serveDir(this, req, options);
     }
 }
