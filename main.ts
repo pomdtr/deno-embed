@@ -2,6 +2,8 @@ import embeds from "./dist/mod.ts";
 
 export default {
     fetch: (req: Request) => {
-        return embeds.serve(req);
+        return embeds.serve(req, {
+            headers: {},
+        });
     },
 };

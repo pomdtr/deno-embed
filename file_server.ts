@@ -192,9 +192,9 @@ export interface ServeDirOptions {
   enableCors?: boolean;
   /** Headers to add to each response
    *
-   * @default {[]}
+   * @default {{}}
    */
-  headers?: Headers;
+  headers?: HeadersInit;
 }
 
 /**
@@ -258,7 +258,8 @@ export async function serveDir(
   }
 
   if (opts.headers && !isRedirectResponse) {
-    for (const [key, value] of opts.headers) {
+    const additionalHeaders = new Headers(opts.headers);
+    for (const [key, value] of additionalHeaders) {
       response.headers.append(key, value);
     }
   }
