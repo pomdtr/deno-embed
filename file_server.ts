@@ -1,11 +1,3 @@
-/**
- * Code in this module is used by embedded files/directories. You should not
- * rely on it directly.
- *
- * @module
- */
-
-export default /* typescript */ `
 import { decodeBase64 } from "jsr:@std/encoding@1.0.1/base64";
 import { extname } from "jsr:@std/path@1.0.0";
 import { contentType } from "jsr:@std/media-types@1.0.0";
@@ -174,6 +166,7 @@ export class Embeds<K extends string = string> {
 
 /** Interface for serveDir options. */
 export interface ServeDirOptions {
+    fsRoot?: string;
     //   /** Specified that part is stripped from the beginning of the requested pathname.
     //    */
     //   urlRoot?: string;
@@ -217,27 +210,31 @@ export interface ServeDirOptions {
     headers?: Record<string, string>;
 }
 
-export async function serveDir(
-    req: Request,
-    options: ServeDirOptions = {},
-): Promise<Response> {
-    let { pathname } = new URL(req.url);
-    if (pathname.endsWith("/")) {
-        pathname += "index.html";
-    }
+export class FileServer {
+    constructor(public dir: Embeds) {}
 
-    const file = await embeds.get(pathname.slice(1));
-    if (!file) {
-        return new Response("Not found", { status: 404 });
-    }
+    serveDir = async (
+        req: Request,
+        options: ServeDirOptions = {},
+    ) => {
+        let { pathname } = new URL(req.url);
+        if (pathname.endsWith("/")) {
+            pathname += "index.html";
+        }
 
-    const type = contentType(extname(pathname)) || "application/octet-stream";
+        const file = await this.dir.get(pathname.slice(1));
+        if (!file) {
+            return new Response("Not found", { status: 404 });
+        }
 
-    return new Response(await file.bytes(), {
-        headers: {
-            "Content-Type": type,
-            ...options.headers,
-        },
-    });
+        const type = contentType(extname(pathname)) ||
+            "application/octet-stream";
+
+        return new Response(await file.bytes(), {
+            headers: {
+                "Content-Type": type,
+                ...options.headers,
+            },
+        });
+    };
 }
-`.trim();

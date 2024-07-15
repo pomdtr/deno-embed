@@ -1,0 +1,18 @@
+{
+    "name": "@smallweb/embed",
+    "version": "0.0.8",
+    "exports": {
+        ".": "./mod.ts",
+        "./file-server": "./file_server.ts"
+    },
+    "tasks": {
+        "embed": "deno run -A mod.ts example/ dist"
+    },
+    "publish": {
+        "include": [
+            "mod.ts",
+            "embed.ts",
+            "README.md"
+        ]
+    }
+}

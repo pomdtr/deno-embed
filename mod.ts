@@ -1,23 +1,8 @@
-/**
- * Smallweb Embed
- * =============
- *
- * Smallweb Embed lets you embed binary files (.png, .txt, etc.)
- * into your deno project without requiring that users grant it
- * `--allow-read` or `--allow-net` permissions.
- *
- * @module
- */
-
 import * as path from "jsr:@std/path@1.0.0";
 import { exists } from "jsr:@std/fs@1.0.0-rc.5";
 import { encodeBase64 } from "jsr:@std/encoding@1.0.1/base64";
-import embed from "./embed.ts";
-
 import { Command } from "jsr:@cliffy/command@1.0.0-rc.5";
-
-const VERSION = "1.0.0";
-const DIR_FILENAME = "dir.ts";
+import manifest from "./deno.json" with { type: "json" };
 
 /** Read all files from a directory tree, recursively.  */
 async function* recursiveReadDir(
@@ -215,9 +200,9 @@ class EmbedWriter {
             byKey((it) => it.relative),
         );
 
-        const outPath = path.join(this.destDir, DIR_FILENAME);
-
         const body = [
+            `import { FileServer, Embeds } from "jsr:@smallweb/embed@${manifest.version}/file-server";`,
+            "",
             `const embeds = new Embeds({`,
         ];
         files.forEach((file) => {
@@ -229,12 +214,12 @@ class EmbedWriter {
         body.push(`});`);
 
         body.push("");
+        body.push("const server = new FileServer(embeds);");
+        body.push("export const serveDir = server.serveDir");
         body.push("export default embeds;");
 
-        const dirData = embed + "\n\n" + body.join("\n");
-
-        // TODO: Is this atomic? If not, make one.
-        await Deno.writeTextFile(outPath, dirData);
+        const outPath = path.join(this.destDir, "dir.ts");
+        await Deno.writeTextFile(outPath, body.join("\n"));
 
         // Also mark these files as generated for git/github:
         await Deno.writeTextFile(
@@ -252,12 +237,6 @@ class EmbedWriter {
         if (!await exists(this.destDir) || await isEmptyDir(this.destDir)) {
             // No dir to clean up. Probably because this is our first run:
             return;
-        }
-
-        if (!await exists(path.join(this.destDir, DIR_FILENAME))) {
-            throw new Error(
-                `${this.destDir} lacks a ${DIR_FILENAME}, so may not be a generated directory. Refusing to clean it up.`,
-            );
         }
 
         await Deno.remove(this.destDir, { recursive: true });
@@ -372,7 +351,7 @@ export async function embedDir(src: string, dst: string) {
 if (import.meta.main) {
     const mainCommand = new Command()
         .name("deno-embedder")
-        .version(VERSION)
+        .version(manifest.version)
         .description("Embeds static files into TypeScript.")
         .arguments("<src:string> <dest:string>")
         .action(async (_, src, dst) => {
