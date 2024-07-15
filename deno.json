@@ -1,6 +1,6 @@
 {
     "name": "@smallweb/embed",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "exports": {
         ".": "./mod.ts",
         "./file-server": "./file_server.ts"
