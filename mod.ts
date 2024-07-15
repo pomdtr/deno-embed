@@ -159,7 +159,7 @@ class EmbedWriter {
         // .d.ts *anywhere* in the file name invokes special typescript behavior:
         normalized = normalized.replaceAll(".d.ts", ".d_ts");
         const { base, dir } = path.parse(normalized);
-        // Prefix generated files with _ so they sorts together nicely. (makes dir.ts easy to see.)
+        // Prefix generated files with _ so they sorts together nicely. (makes mod.ts easy to see.)
         normalized = path.join(dir, `_${base}.ts`);
 
         const onDisk = path.join(this.destDir, normalized);
@@ -190,7 +190,7 @@ class EmbedWriter {
     #files = new Map<string, FilePaths>();
 
     /**
-     * write the dir.ts file that lets us find all files.
+     * write the mod.ts file that lets us find all files.
      *
      * You should call this after you've written all your files.
      */
@@ -200,26 +200,20 @@ class EmbedWriter {
             byKey((it) => it.relative),
         );
 
-        const body = [
-            `import { FileServer, Embeds } from "jsr:@smallweb/embed@${manifest.version}/file-server";`,
+        const rows = [
+            `import { Embeds } from "jsr:@smallweb/embed@${manifest.version}/embeds";`,
             "",
             `const embeds = new Embeds({`,
+            ...files.map((file) =>
+                `  "${file.relative}": () => import("${file.import}"),`
+            ),
+            `});`,
+            "",
+            `export default embeds;`,
         ];
-        files.forEach((file) => {
-            body.push(
-                `  "${file.relative}": () => import("${file.import}"),`,
-            );
-        });
 
-        body.push(`});`);
-
-        body.push("");
-        body.push("const server = new FileServer(embeds);");
-        body.push("export const serveDir = server.serveDir");
-        body.push("export default embeds;");
-
-        const outPath = path.join(this.destDir, "dir.ts");
-        await Deno.writeTextFile(outPath, body.join("\n"));
+        const outPath = path.join(this.destDir, "mod.ts");
+        await Deno.writeTextFile(outPath, rows.join("\n"));
 
         // Also mark these files as generated for git/github:
         await Deno.writeTextFile(

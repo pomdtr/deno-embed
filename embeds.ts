@@ -7,7 +7,7 @@ const decoder = new TextDecoder();
 /**
  * Represents the contents of a file that's been embedded into TypeScript.
  */
-export class File {
+class File {
     /** Size of the embedded file in bytes (uncomrpessed/unencoded) */
     readonly size: number;
 
@@ -57,7 +57,7 @@ export class File {
 /**
  * The data we expect to find generated embedded files.
  */
-export interface FileMeta {
+interface FileMeta {
     /** Size of the embedded file (uncomrpessed/unencoded) */
     size: number;
 
@@ -77,7 +77,7 @@ export interface FileMeta {
 }
 
 /** Valid compression formats for embedded files. */
-export type CompressionFormat = ConstructorParameters<
+type CompressionFormat = ConstructorParameters<
     typeof DecompressionStream
 >[0];
 
@@ -102,25 +102,22 @@ async function decompress(
     return new Uint8Array(buf);
 }
 
-export type FileModule = { default: FileMeta };
+type FileModule = { default: FileMeta };
 
 /** A function that we can call to import a file module. */
-export type FileImporter = () => Promise<FileModule>;
+type FileImporter = () => Promise<FileModule>;
 
 /** We expect the embed file to pass this into Embeds. */
-export type EmbedsDef<K extends string> = Record<K, FileImporter>;
+type EmbedsDef<K extends string> = Record<K, FileImporter>;
 
 /**
  * Allows accessing all files embedded.
- *
- * Each \`dir.ts\` in your Mapping \`destDir\` exposes an instance
- * of this class as its default export.
  */
 export class Embeds<K extends string = string> {
     #embeds: EmbedsDef<K>;
 
     /**
-     * Called (indirectly) by a \`dir.ts\` file to register its contents.
+     * Called (indirectly) by a \`mod.ts\` file to register its contents.
      */
     constructor(embeds: EmbedsDef<K>) {
         this.#embeds = embeds;
@@ -162,67 +159,14 @@ export class Embeds<K extends string = string> {
         const mod = await importer();
         return new File(mod.default);
     }
-}
 
-/** Interface for serveDir options. */
-export interface ServeDirOptions {
-    fsRoot?: string;
-    //   /** Specified that part is stripped from the beginning of the requested pathname.
-    //    */
-    //   urlRoot?: string;
-    //   /** Enable directory listing.
-    //    *
-    //    * @default {false}
-    //    */
-    //   showDirListing?: boolean;
-    //   /** Serves dotfiles.
-    //    *
-    //    * @default {false}
-    //    */
-    //   showDotfiles?: boolean;
-    //   /** Serves \`index.html\` as the index file of the directory.
-    //    *
-    //    * @default {true}
-    //    */
-    //   showIndex?: boolean;
-    //   /**
-    //    * Enable CORS via the
-    //    * {@linkcode https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin | Access-Control-Allow-Origin}
-    //    * header.
-    //    *
-    //    * @default {false}
-    //    */
-    //   enableCors?: boolean;
-    //   /** Do not print request level logs.
-    //    *
-    //    * @default {false}
-    //    */
-    //   quiet?: boolean;
-    //   /** The algorithm to use for generating the ETag.
-    //    *
-    //    * @default {"SHA-256"}
-    //    */
-    //   etagAlgorithm?: AlgorithmIdentifier;
-    /** Headers to add to each response
-     *
-     * @default {{}}
-     */
-    headers?: Record<string, string>;
-}
-
-export class FileServer {
-    constructor(public dir: Embeds) {}
-
-    serveDir = async (
-        req: Request,
-        options: ServeDirOptions = {},
-    ) => {
+    async serve(req: Request) {
         let { pathname } = new URL(req.url);
         if (pathname.endsWith("/")) {
             pathname += "index.html";
         }
 
-        const file = await this.dir.get(pathname.slice(1));
+        const file = await this.get(pathname.slice(1));
         if (!file) {
             return new Response("Not found", { status: 404 });
         }
@@ -233,8 +177,7 @@ export class FileServer {
         return new Response(await file.bytes(), {
             headers: {
                 "Content-Type": type,
-                ...options.headers,
             },
         });
-    };
+    }
 }

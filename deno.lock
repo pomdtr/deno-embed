@@ -64,6 +64,7 @@
       "jsr:@std/media-types@0.222": "jsr:@std/media-types@0.222.1",
       "jsr:@std/media-types@0.223": "jsr:@std/media-types@0.223.0",
       "jsr:@std/media-types@0.224.0": "jsr:@std/media-types@0.224.0",
+      "jsr:@std/media-types@1.0.0": "jsr:@std/media-types@1.0.0",
       "jsr:@std/media-types@^1.0.1": "jsr:@std/media-types@1.0.1",
       "jsr:@std/net@^1.0.0-rc.1": "jsr:@std/net@1.0.0-rc.1",
       "jsr:@std/path": "jsr:@std/path@1.0.0",
@@ -347,6 +348,9 @@
       },
       "@std/media-types@0.224.0": {
         "integrity": "5ac87989393f8cb1c81bee02aef6f5d4c8289b416deabc04f9ad25dff292d0b0"
+      },
+      "@std/media-types@1.0.0": {
+        "integrity": "58ff81ce1f7af8c46304a52482db804c42936492daad19c0bd5d887832737d2b"
       },
       "@std/media-types@1.0.1": {
         "integrity": "f2ddc3497be0bd87ac0c9b9b26bb454f76bdc45e1b9a12146af47fab3ba2828c"
