@@ -122,8 +122,9 @@ class EmbedWriter {
     ): Promise<void> {
         const compression = "gzip";
         const compressed = await compress(data, compression);
-        const gain = data.length - compressed.length;
-        const shouldCompress = gain >= this.minCompressionGainBytes;
+        const shouldCompress = true;
+        // const gain = data.length - compressed.length;
+        // const shouldCompress = gain >= this.minCompressionGainBytes;
 
         let encoded = shouldCompress
             ? encodeBase64(compressed)
@@ -133,6 +134,8 @@ class EmbedWriter {
         const { onDisk: outPath } = this.#addFile(filePath);
 
         const outLines = [
+            `import type { FileMeta } from "jsr:@smallweb/embed@${manifest.version}/embed";`,
+            ``,
             `export default {`,
             ` size: ${data.length},`,
         ];
@@ -148,7 +151,7 @@ class EmbedWriter {
         if (fileInfo.mtime) {
             outLines.push(` mtime: new Date(${fileInfo.mtime.getTime()}),`);
         }
-        outLines.push(`}`);
+        outLines.push(`} satisfies FileMeta;`);
         const outData = outLines.join("\n");
 
         await Deno.mkdir(path.dirname(outPath), { recursive: true });
@@ -215,7 +218,7 @@ class EmbedWriter {
         );
 
         const rows = [
-            `import { Embeds } from "jsr:@smallweb/embed@${manifest.version}/embeds";`,
+            `import { Embeds } from "jsr:@smallweb/embed@${manifest.version}/embed";`,
             "",
             `const embeds = new Embeds({`,
             ...files.map((file) =>

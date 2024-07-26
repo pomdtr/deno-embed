@@ -1,9 +1,9 @@
 {
     "name": "@smallweb/embed",
-    "version": "0.0.12",
+    "version": "0.0.14",
     "exports": {
         ".": "./mod.ts",
-        "./embeds": "./embeds.ts"
+        "./embed": "./embed.ts"
     },
     "tasks": {
         "embed": "deno run -A mod.ts example/ dist"
