@@ -145,12 +145,6 @@ class EmbedWriter {
         }
         outLines.push(` encoded: \`${encoded}\`,`);
         outLines.push(` eTag: \`${await eTag(data)}\`,`);
-        if (fileInfo.atime) {
-            outLines.push(` atime: new Date(${fileInfo.atime.getTime()}),`);
-        }
-        if (fileInfo.mtime) {
-            outLines.push(` mtime: new Date(${fileInfo.mtime.getTime()}),`);
-        }
         outLines.push(`} satisfies FileMeta;`);
         const outData = outLines.join("\n");
 

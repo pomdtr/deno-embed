@@ -90,34 +90,19 @@ export async function serveFile(
 
   const headers = createBaseHeaders();
 
-  // Set date header if access timestamp is available
-  if (fileMeta.atime) {
-    headers.set("date", fileMeta.atime.toUTCString());
-  }
-
   const etag = fileMeta.eTag;
-
   // Set last modified header if last modification timestamp is available
-  if (fileMeta.mtime) {
-    headers.set("last-modified", fileMeta.mtime.toUTCString());
-  }
   if (etag) {
     headers.set("etag", etag);
   }
 
-  if (etag || fileMeta.mtime) {
+  if (etag) {
     // If a `if-none-match` header is present and the value matches the tag or
     // if a `if-modified-since` header is present and the value is bigger than
     // the access timestamp value, then return 304
     const ifNoneMatchValue = req.headers.get("if-none-match");
-    const ifModifiedSinceValue = req.headers.get("if-modified-since");
     if (
-      (!ifNoneMatch(ifNoneMatchValue, etag)) ||
-      (ifNoneMatchValue === null &&
-        fileMeta.mtime &&
-        ifModifiedSinceValue &&
-        fileMeta.mtime.getTime() <
-          new Date(ifModifiedSinceValue).getTime() + 1000)
+      (!ifNoneMatch(ifNoneMatchValue, etag))
     ) {
       const status = STATUS_CODE.NotModified;
       return new Response(null, {

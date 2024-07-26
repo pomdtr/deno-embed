@@ -72,9 +72,6 @@ export interface FileMeta {
     /** If specified, how the bytes of this file are compressed. */
     compression?: CompressionFormat;
     eTag: string;
-    atime?: Date;
-    mtime?: Date;
-
     // TODO: sha256, modified time, etc.
 }
 
