@@ -11,7 +11,7 @@
     "publish": {
         "include": [
             "mod.ts",
-            "embeds.ts",
+            "embed.ts",
             "file_server.ts",
             "README.md"
         ]

@@ -31,7 +31,7 @@
  * @module
  */
 
-import type { Embeds, FileMeta } from "./embeds.ts";
+import type { Embeds, FileMeta } from "./embed.ts";
 import { normalize as posixNormalize } from "jsr:/@std/path@1.0.0-rc.2/posix/normalize";
 import { extname } from "jsr:/@std/path@1.0.0-rc.2/extname";
 import { join } from "jsr:/@std/path@1.0.0-rc.2/join";
